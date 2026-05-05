@@ -131,7 +131,7 @@ while true; do
     echo " 3. Hapus Akun"
     echo " 4. Backup ke Telegram"
     echo " 5. Restore dari Telegram"
-    echo " 6. Ganti Token dan ID BOT"
+    echo " 6. Ganti Token BOT dan ID Admin"
     echo " 7. Pasang SSL Domain"
     echo " 0. Exit"
     echo "=================================================="
