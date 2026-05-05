@@ -5,5 +5,5 @@ wget https://raw.githubusercontent.com/richnstore/udepe/main/install.sh -O insta
 
 ## Uninstall
 ```
-wget https://raw.githubusercontent.com/richnstore/udepe/main/install.sh -O uninstall.sh && chmod +x uninstall.sh && bash uninstall.sh
+wget https://raw.githubusercontent.com/richnstore/udepe/main/uninstall.sh -O uninstall.sh && chmod +x uninstall.sh && bash uninstall.sh
 ```
