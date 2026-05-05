@@ -24,7 +24,7 @@ systemctl stop zivpn.service 2>/dev/null
 mkdir -p /etc/zivpn
 wget https://github.com/zahidbd2/udp-zivpn/releases/download/udp-zivpn_1.4.9/udp-zivpn-linux-amd64 -O /usr/local/bin/zivpn
 chmod +x /usr/local/bin/zivpn
-[ ! -f /etc/zivpn/config.json ] && wget https://raw.githubusercontent.com/zahidbd2/udp-zivpn/main/config.json -O /etc/zivpn/config.json[cite: 1]
+[ ! -f /etc/zivpn/config.json ] && wget https://raw.githubusercontent.com/zahidbd2/udp-zivpn/main/config.json -O /etc/zivpn/config.json
 
 # Init Files
 touch /etc/zivpn/expiration.list
