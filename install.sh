@@ -115,7 +115,7 @@ while true; do
     echo "               SYSTEM INFORMATION                 "
     echo "=================================================="
     echo " IP VPS      : $IPVPS"
-    echo " Domain      : ${DOMAIN:-Belum Terpasang}"
+    echo " Domain      : $DOMAIN"
     echo " ISP         : $ISP"
     echo " CPU Usage   : $CPU"
     echo " RAM Usage   : $RAM"
