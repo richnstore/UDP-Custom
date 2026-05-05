@@ -101,15 +101,18 @@ while true; do
     
     # Ambil Data Sistem
     IPVPS=$(curl -s ifconfig.me)
-    DOMAIN=$(openssl x509 -noout -subject -in /etc/zivpn/zivpn.crt 2>/dev/null | sed -n 's/^subject=.*CN = \(.*\)$/\1/p')
+    DOMAIN=$(openssl x509 -noout -subject -in /etc/zivpn/zivpn.crt 2>/dev/null | grep -oP 'CN = \K[^,]+' || openssl x509 -noout -subject -in /etc/zivpn/zivpn.crt 2>/dev/null | grep -oP 'CN=\K[^,]+')
     ISP=$(curl -s ipinfo.io/org | cut -d " " -f 2-)
     CPU=$(top -bn1 | grep "Cpu(s)" | sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | awk '{print 100 - $1"%"}')
     RAM=$(free -m | awk '/Mem:/ { printf("%3.1f%%", $3/$2*100) }')
     
     # Ambil Data Bandwidth
     INTF=$(ip -4 route ls|grep default|grep -Po '(?<=dev )(\S+)'|head -1)
-    DAILY=$(vnstat -i $INTF --oneline | cut -d ';' -f 4)
-    MONTHLY=$(vnstat -i $INTF --oneline | cut -d ';' -f 10)
+    DAILY=$(vnstat -i $INTF -d --short | grep "today" | awk '{print $8" "$9}')
+    MONTHLY=$(vnstat -i $INTF -m --short | grep "$(date +%Y-%m)" | awk '{print $8" "$9}')
+    # Validasi jika data masih kosong/sedang inisialisasi
+    [ -z "$DAILY" ] && DAILY="0.00 MiB"
+    [ -z "$MONTHLY" ] && MONTHLY="0.00 MiB"
 
     echo "=================================================="
     echo "               SYSTEM INFORMATION                 "
