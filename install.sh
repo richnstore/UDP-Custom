@@ -142,10 +142,11 @@ while true; do
             read -p "User/Pass: " user
             read -p "Masa Aktif (Hari): " days
             exp=$(date -d "+$days days" +%Y-%m-%d)
+            exp_notif=$(date -d "+$days days -1 days" +%Y-%m-%d)
             sed -i "s/\"config\":\s*\[/\"config\": \[\"$user\", /g" "$CONFIG_FILE"
             sed -i 's/, \]/ \]/g; s/, ,/, /g' "$CONFIG_FILE"
             echo "$user|$exp" >> "$EXP_FILE"
-            send_telegram "✅ <b>Berhasil Dibuat</b>%0APelanggan: <code>$user</code>%0AMasa Aktif: <code>$exp</code> ($days Hari)"
+            send_telegram "✅ <b>Berhasil Dibuat</b>%0APelanggan: <code>$user</code>%0AMasa Aktif: <code>$exp_notif 23.59 WIB</code> ($days Hari)"
             systemctl restart zivpn.service
             echo "Sukses membuat user $user."
             pause
