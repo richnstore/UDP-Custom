@@ -102,7 +102,7 @@ while true; do
             sed -i "s/\"config\":\s*\[/\"config\": \[\"$user\", /g" "$CONFIG_FILE"
             sed -i 's/, \]/ \]/g; s/, ,/, /g' "$CONFIG_FILE"
             echo "$user|$exp" >> "$EXP_FILE"
-            send_telegram "✅ <b>Berhasill Membuat/Memperpanjang Akun</b>%0AUser: <code>$user</code>%0AExpired: <code>$exp</code> ($days Hari)"
+            send_telegram "✅ <b>Berhasil Membuat/Memperpanjang Akun</b>%0AUser: <code>$user</code>%0AExpired: <code>$exp</code> ($days Hari)"
             systemctl restart zivpn.service
             ;;
         2)
