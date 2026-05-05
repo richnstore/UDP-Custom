@@ -63,38 +63,30 @@ auto_delete() {
 }
 
 backup_data() {
-    if [[ -z "$BOT_TOKEN" ]]; then echo "Bot Token belum diatur!"; pause; return; fi
+    if [[ -z "$BOT_TOKEN" || -z "$ADMIN_ID" ]]; then 
+        echo "❌ Error: Konfigurasi Bot belum lengkap!"; pause; return
+    fi
+    echo "--- Menyiapkan Backup ---"
     zip_file="/root/backup_zivpn.zip"
-    zip -j $zip_file $CONFIG_FILE $EXP_FILE > /dev/null
-    curl -s -F chat_id="$ADMIN_ID" -F document=@"$zip_file" \
-    -F caption="✅ <b>Backup ZIVPN</b>%0ADate: $(date)" \
-    "https://api.telegram.org/bot$BOT_TOKEN/sendDocument" > /dev/null
-    rm $zip_file
-    echo "Backup berhasil dikirim ke Telegram."
-    pause
+    zip -j $zip_file $CONFIG_FILE $EXP_FILE > /dev/null 2>&1
+    status=$(curl -s -F chat_id="$ADMIN_ID" -F document=@"$zip_file" -F caption="✅ Backup ZIVPN" "https://api.telegram.org/bot$BOT_TOKEN/sendDocument")
+    if echo "$status" | grep -q '"ok":true'; then
+        echo "✅ Sukses dikirim ke Telegram."; else echo "❌ Gagal mengirim."; fi
+    rm -f $zip_file; pause
 }
 
 restore_data() {
-    if [[ -z "$BOT_TOKEN" ]]; then echo "Bot Token belum diatur!"; pause; return; fi
-    echo "Mencari file backup terakhir di Bot..."
+    if [[ -z "$BOT_TOKEN" ]]; then echo "❌ Error: Konfigurasi Bot belum lengkap!"; pause; return; fi
+    echo "--- Mencari Backup... ---"
     updates=$(curl -s "https://api.telegram.org/bot$BOT_TOKEN/getUpdates")
     file_id=$(echo $updates | jq -r '.result | map(select(.message.document != null)) | last | .message.document.file_id')
-    
-    if [[ "$file_id" == "null" ]]; then 
-        echo "File backup tidak ditemukan di chat bot!"
-        pause
-        return
-    fi
-    
+    if [[ "$file_id" == "null" || -z "$file_id" ]]; then
+        echo "❌ File tidak ditemukan!"; pause; return; fi
     file_path=$(curl -s "https://api.telegram.org/bot$BOT_TOKEN/getFile?file_id=$file_id" | jq -r '.result.file_path')
     wget -q -O /root/restore.zip "https://api.telegram.org/file/bot$BOT_TOKEN/$file_path"
-    unzip -o /root/restore.zip -d /etc/zivpn/ > /dev/null
-    rm /root/restore.zip
-    systemctl restart zivpn.service
-    echo "✅Restore selesai! Data telah diperbarui."
-    pause
+    unzip -o /root/restore.zip -d /etc/zivpn/ > /dev/null && rm /root/restore.zip
+    systemctl restart zivpn.service && echo "✅ Restore Sukses!"; pause
 }
-
 while true; do
     auto_delete
     clear
