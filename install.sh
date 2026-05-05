@@ -4,7 +4,7 @@
 # 1. Update & Dependencies
 echo -e "--- Installing Dependencies ---"
 apt-get update && apt-get upgrade -y
-apt-get install -y wget curl openssl iptables ufw certbot cron jq zip unzip vnstat bc[cite: 1]
+apt-get install -y wget curl openssl iptables ufw certbot cron jq zip unzip vnstat bc
 
 # Konfigurasi vnStat
 systemctl enable vnstat
