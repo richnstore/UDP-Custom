@@ -22,6 +22,8 @@ rm -rf /etc/letsencrypt/live/$(hostname) 2>/dev/null # Opsional: Menghapus SSL j
 echo "Membersihkan pengaturan cronjob..."
 crontab -l | grep -v "/sbin/reboot" | crontab - 2>/dev/null
 crontab -l | grep -v "/usr/local/bin/menu auto_delete" | crontab - 2>/dev/null
+crontab -l | grep -v "systemctl restart zivpn.service" | crontab - 2>/dev/null
+crontab -l | grep -v "netfilter-persistent reload" | crontab - 2>/dev/null
 
 # 4. Mengembalikan Pengaturan Kernel (BBR)
 echo "Menghapus optimasi BBR dari sysctl..."
