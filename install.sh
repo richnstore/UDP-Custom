@@ -4,7 +4,7 @@
 # 1. Update & Dependencies
 echo -e "--- Installing Dependencies ---"
 apt-get update && apt-get upgrade -y
-apt-get install -y wget curl openssl iptables ufw certbot cron jq zip unzip vnstat bc
+apt-get install -y wget curl openssl iptables iptables-persistent netfilter-persistent certbot cron jq zip unzip vnstat bc
 
 # Konfigurasi vnStat
 systemctl enable vnstat
@@ -200,10 +200,12 @@ chmod +x /usr/local/bin/menu
 
 # 5. Firewall & Network Setup
 echo -e "--- Configuring Firewall & Network ---"
-iptables -t nat -A PREROUTING -i $(ip -4 route ls|grep default|grep -Po '(?<=dev )(\S+)'|head -1) -p udp --dport 6000:19999 -j DNAT --to-destination :5667
-ufw allow 6000:19999/udp
-ufw allow 5667/udp
-ufw allow 80/tcp
+INTF=$(ip -4 route ls|grep default|grep -Po '(?<=dev )(\S+)'|head -1)
+iptables -F
+iptables -t nat -F
+iptables -t nat -A PREROUTING -i $INTF -p udp --dport 6000:19999 -j DNAT --to-destination :5667
+netfilter-persistent save
+netfilter-persistent reload
 
 # 6. Service & Cronjob Setup
 echo -e "--- Setting Up Service & Cronjobs ---"
@@ -231,6 +233,8 @@ EOF
 # Setup Crontab
 (crontab -l 2>/dev/null; echo "05 00 * * * /sbin/reboot") | crontab -
 (crontab -l 2>/dev/null; echo "0 0 * * * /usr/local/bin/menu auto_delete") | crontab -
+(crontab -l 2>/dev/null; echo "@reboot systemctl restart zivpn.service") | crontab -
+(crontab -l 2>/dev/null; echo "@reboot netfilter-persistent reload") | crontab -
 
 # 7. Finalize
 systemctl daemon-reload
