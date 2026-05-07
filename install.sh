@@ -1,7 +1,7 @@
 #!/bin/bash
 # Zivpn All-in-One Installer
 
-# 1. Update & Dependencies
+# Update & Dependencies
 echo -e "--- Installing Dependencies ---"
 apt-get update && apt-get upgrade -y
 apt-get install -y wget curl openssl iptables iptables-persistent netfilter-persistent certbot cron jq zip unzip vnstat bc
@@ -10,7 +10,7 @@ apt-get install -y wget curl openssl iptables iptables-persistent netfilter-pers
 systemctl enable vnstat
 systemctl start vnstat
 
-# 2. Kernel Optimization (BBR)
+# Kernel Optimization (BBR)
 echo -e "--- Optimizing Connection (BBR) ---"
 if ! grep -q "net.core.default_qdisc=fq" /etc/sysctl.conf; then
     echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
@@ -18,7 +18,7 @@ if ! grep -q "net.core.default_qdisc=fq" /etc/sysctl.conf; then
     sysctl -p
 fi
 
-# 3. Zivpn Binary & Config Setup
+# Zivpn Binary & Config Setup
 echo -e "--- Downloading Zivpn Service ---"
 systemctl stop zivpn.service 2>/dev/null
 mkdir -p /etc/zivpn
@@ -30,7 +30,12 @@ chmod +x /usr/local/bin/zivpn
 touch /etc/zivpn/expiration.list
 [ ! -f /etc/zivpn/bot.conf ] && echo -e "BOT_TOKEN=\"\"\nADMIN_ID=\"\"" > /etc/zivpn/bot.conf
 
-# 4. Create Advanced Manager (The 'menu' command)
+# Download & Setup Auto-Delete Script (From Your GitHub)
+echo -e "--- Setting Up Auto-Delete Script ---"
+wget -O /usr/local/bin/autodel.sh https://raw.githubusercontent.com/richnstore/udepe/main/autodel.sh
+chmod +x /usr/local/bin/autodel.sh
+
+# Create Advanced Manager (The 'menu' command)
 cat <<'EOF' > /usr/local/bin/menu
 #!/bin/bash
 CONFIG_FILE="/etc/zivpn/config.json"
@@ -47,19 +52,6 @@ send_telegram() {
         curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/sendMessage" \
         -d chat_id="$ADMIN_ID" -d text="$1" -d parse_mode="HTML" > /dev/null
     fi
-}
-
-auto_delete() {
-    today=$(date +%Y-%m-%d)
-    while IFS="|" read -r user exp_date; do
-        if [[ "$today" > "$exp_date" ]]; then
-            sed -i "s/\"$user\"//g" "$CONFIG_FILE"
-            sed -i 's/\[\s*,/\[/g; s/,\s*\]/\]/g; s/,\s*,/,/g' "$CONFIG_FILE"
-            sed -i "/^$user|$exp_date/d" "$EXP_FILE"
-            send_telegram "⚠️ <b>Masa Aktif Habis</b>%0AUser: <code>$user</code>%0AStatus: Telah dihapus otomatis."
-            systemctl restart zivpn.service
-        fi
-    done < "$EXP_FILE"
 }
 
 backup_data() {
@@ -198,7 +190,7 @@ EOF
 
 chmod +x /usr/local/bin/menu
 
-# 5. Firewall & Network Setup
+# Firewall & Network Setup
 echo -e "--- Configuring Firewall & Network ---"
 INTF=$(ip -4 route ls|grep default|grep -Po '(?<=dev )(\S+)'|head -1)
 iptables -F
@@ -207,7 +199,7 @@ iptables -t nat -A PREROUTING -i $INTF -p udp --dport 6000:19999 -j DNAT --to-de
 netfilter-persistent save
 netfilter-persistent reload
 
-# 6. Service & Cronjob Setup
+# Service & Cronjob Setup
 echo -e "--- Setting Up Service & Cronjobs ---"
 cat <<EOF > /etc/systemd/system/zivpn.service
 [Unit]
@@ -232,11 +224,11 @@ EOF
 
 # Setup Crontab
 (crontab -l 2>/dev/null; echo "05 00 * * * /sbin/reboot") | crontab -
-(crontab -l 2>/dev/null; echo "0 0 * * * /usr/local/bin/menu auto_delete") | crontab -
+(crontab -l 2>/dev/null; echo "0 0 * * * /usr/local/bin/autodel.sh") | crontab -
 (crontab -l 2>/dev/null; echo "@reboot systemctl restart zivpn.service") | crontab -
 (crontab -l 2>/dev/null; echo "@reboot netfilter-persistent reload") | crontab -
 
-# 7. Finalize
+# Finalize
 systemctl daemon-reload
 systemctl enable zivpn.service
 systemctl start zivpn.service
