@@ -15,13 +15,14 @@ systemctl daemon-reload
 echo "Menghapus file binary dan folder konfigurasi..."
 rm /usr/local/bin/zivpn 2>/dev/null
 rm /usr/local/bin/menu 2>/dev/null
+rm  /usr/local/bin/autodel.sh 2>/dev/null
 rm -rf /etc/zivpn 2>/dev/null
 rm -rf /etc/letsencrypt/live/$(hostname) 2>/dev/null # Opsional: Menghapus SSL jika ada
 
 # 3. Membersihkan Cronjob (Auto Reboot & Auto Expired)
 echo "Membersihkan pengaturan cronjob..."
 crontab -l | grep -v "/sbin/reboot" | crontab - 2>/dev/null
-crontab -l | grep -v "/usr/local/bin/menu auto_delete" | crontab - 2>/dev/null
+crontab -l | grep -v "/usr/local/bin/autodel.sh" | crontab - 2>/dev/null
 crontab -l | grep -v "systemctl restart zivpn.service" | crontab - 2>/dev/null
 crontab -l | grep -v "netfilter-persistent reload" | crontab - 2>/dev/null
 
